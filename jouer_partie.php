@@ -25,7 +25,7 @@
 		qui sert à savoir quand-est-ce que le joueueur à appuyé 
 		pour la dernière fois sur le bouton*/
 		$dernier_coup = -10;
-		
+
 		// récupération de si le joueur est noir ou blanc :
 		$req = "SELECT joueur_1, joueur_2 FROM Partie WHERE id_partie = '$id_partie'";
 		$id_joueurs = $bdd->query($req)->fetch();
@@ -70,7 +70,7 @@
 				unset($_POST['reponse_null']);
 				$req = "UPDATE Partie SET statut = 'finie' WHERE id_partie = '$id_partie'";
 				$bdd->query($req);
-				echo "vous avez accépté nulle";
+				echo "vous avez accepté nulle";
 				echo'<form action="main.php" method="post">
 					<button type="submit">retourner au menu principale</button>
 				</form>';
@@ -936,25 +936,7 @@
 				echo '<p>Ce n est pas à vous de jouer, veuillez actualiser fréquement la page afin 
 					de savoir l orsque ça sera votre tour</p>';
 				// affichage du bouton pour l'echec et math 
-				echo '<form action="">
-					<button type="button" name="echec_math">Echec et math ?</button>
-					</form>';
-		
-				if (isset($_POST['echec_math'])){
-
-					//si le joueur reclame un echec, on regarde le numéro de coup, 
-					$req = "SELECT max(num_coup) FROM coup WHERE id_partie = '$id_partied'";
-					$numero_coup =  $bdd->query($req)->fetch();
-		
-						if ($numero_coup == $dernier_coup + 2 ) {
-							//si le coup actelle est inférieur ou égal au dernier coup, alors je joueur adverse a perdu
-						}
-						else {
-
-
-						}
-					
-				}
+				
 			}
 
 			// proposition d'abandon de partie
@@ -983,6 +965,27 @@
 					<button type="submit" name="confirmation" value="oui">Abandonner partie</button>
 					<button type="submit" name="confirmation" value="non">Annuler</button>
 				</form>';
+
+				echo '<form action="">
+				<button type="button" name="echec_math">Echec et math ?</button>
+				</form>';
+	
+			if (isset($_POST['echec_math'])){
+
+				//si le joueur reclame un echec, on regarde le numéro de coup, 
+				$req = "SELECT max(num_coup) FROM coup WHERE id_partie = '$id_partied'";
+				$numero_coup =  $bdd->query($req)->fetch();
+	
+					if ($numero_coup == $dernier_coup + 1 ) {
+						//si le coup actelle est inférieur ou égal au dernier coup, 
+						//alors je joueur adverse a perdu
+						
+					}
+					else {
+						$dernier_coup = $numero_coup;
+					}
+				
+			}
 		}
 					
 	?>
