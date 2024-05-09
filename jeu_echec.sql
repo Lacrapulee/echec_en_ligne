@@ -85,6 +85,7 @@ CREATE TABLE `partie` (
 -- Déchargement des données de la table `partie`
 --
 
+
 INSERT INTO `partie` (`id_partie`, `joueur_1`, `joueur_2`, `statut`, `pendule_j1`, `pendule_j2`, `temps_coup`, `niveau`, `point_1`, `point_2`, `id_vainqueur`, `joueur_dont_c_est_le_tour`, `etat_echiquier`, `propose_null`) VALUES
 (5, 11, NULL, 'en attente', 19999, 123, 123, 'facile', 4, 7, NULL, NULL, NULL, NULL),
 (7, NULL, 12, 'En attente', 34, 34, 456, 'facile', 0, 0, NULL, NULL, NULL, NULL),

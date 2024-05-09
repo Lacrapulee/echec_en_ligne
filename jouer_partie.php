@@ -20,6 +20,12 @@
 		// connexion à la base de donnée :
 		$bdd = new PDO("mysql:host=localhost;dbname=jeu_echec;charset=utf8", "root", "");
 
+		
+		/*on instancie la variable dernier numero 
+		qui sert à savoir quand-est-ce que le joueueur à appuyé 
+		pour la dernière fois sur le bouton*/
+		$dernier_coup = -10;
+		
 		// récupération de si le joueur est noir ou blanc :
 		$req = "SELECT joueur_1, joueur_2 FROM Partie WHERE id_partie = '$id_partie'";
 		$id_joueurs = $bdd->query($req)->fetch();
@@ -278,7 +284,7 @@
 				if($echiquier == NULL)
 				{
 					// si la partie n'a pas encore commencé, l'échiquier est initialisé ici
-					$echiquier = initialise_echiquier();
+					$echiquier = initialise_echiquier(); 
 				}
 				else
 				{
@@ -286,7 +292,8 @@
 					$echiquier = unserialize($echiquier);
 				}
 
-			if(($joueur_dont_c_est_le_tour == 1 && $couleur_joueur == "blanc") || ($joueur_dont_c_est_le_tour == 2 && $couleur_joueur == "noir")) /* si c'est a moi de jouer */{
+			if(($joueur_dont_c_est_le_tour == 1 && $couleur_joueur == "blanc") || ($joueur_dont_c_est_le_tour == 2 && $couleur_joueur == "noir"))/* si c'est a moi de jouer */
+			{
 				// si c'est au joueur blanc de jouer et que je suis le joueur blanc
 				// ou si au joueur noir et que je suis le joueur noir
 
@@ -928,6 +935,26 @@
 				// affichage d'un message qui demande d'actualiser la page régulièrement
 				echo '<p>Ce n est pas à vous de jouer, veuillez actualiser fréquement la page afin 
 					de savoir l orsque ça sera votre tour</p>';
+				// affichage du bouton pour l'echec et math 
+				echo '<form action="">
+					<button type="button" name="echec_math">Echec et math ?</button>
+					</form>';
+		
+				if (isset($_POST['echec_math'])){
+
+					//si le joueur reclame un echec, on regarde le numéro de coup, 
+					$req = "SELECT max(num_coup) FROM coup WHERE id_partie = '$id_partied'";
+					$numero_coup =  $bdd->query($req)->fetch();
+		
+						if ($numero_coup == $dernier_coup + 2 ) {
+							//si le coup actelle est inférieur ou égal au dernier coup, alors je joueur adverse a perdu
+						}
+						else {
+
+
+						}
+					
+				}
 			}
 
 			// proposition d'abandon de partie
@@ -957,7 +984,6 @@
 					<button type="submit" name="confirmation" value="non">Annuler</button>
 				</form>';
 		}
-
 					
 	?>
 
