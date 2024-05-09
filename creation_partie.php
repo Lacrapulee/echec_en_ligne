@@ -1,9 +1,9 @@
 <?php
 session_start();
 // vérifie si les données de connexion sont envoyées via POST
-if ($_SERVER["REQUEST_METHOD"] == "POST") {	
-
-	// connexion à la base de donnée
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  
+  // connexion à la base de donnée
     $conn = new PDO("mysql:host=localhost;dbname=jeu_echec;charset=utf8", "root", "");
 
     // récupération de l'identifiant du client connecté
@@ -17,12 +17,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if($couleur == "blanc")
     {
-    	$sql = "INSERT INTO partie (joueur_1, pendule_j1, pendule_j2, temps_coup, niveau, point_1, point_2) VALUES('$id_client', '$pendule', '$pendule', '$temps_par_coup','$niveau', 0, 0)";
+    	$sql = "INSERT INTO partie (joueur_1, pendule_j1, pendule_j2, temps_coup, niveau, point_1, point_2, joueur_dont_c_est_le_tour) VALUES('$id_client', '$pendule', '$pendule', '$temps_par_coup','$niveau', 0, 0, 1)";
 		$conn->query($sql);
     }
     else
     {
-    	$sql = "INSERT INTO partie (joueur_2, pendule_j1, pendule_j2, temps_coup, niveau, point_1, point_2) VALUES('$id_client', '$pendule', '$pendule', '$temps_par_coup','$niveau', 0, 0)";
+    	$sql = "INSERT INTO partie (joueur_2, pendule_j1, pendule_j2, temps_coup, niveau, point_1, point_2, joueur_dont_c_est_le_tour) VALUES('$id_client', '$pendule', '$pendule', '$temps_par_coup','$niveau', 0, 0, 1)";
 		$conn->query($sql);
     }
 

@@ -24,8 +24,7 @@
 		$req = "SELECT joueur_1, joueur_2 FROM Partie WHERE id_partie = '$id_partie'";
 		$id_joueurs = $bdd->query($req)->fetch();
 
-		// déclaration de qui est blanc et qui est noir (le premier joueur est blanc,
-		// et le deuxième est noir)
+		// déclaration de qui est blanc et qui est noir (le premier joueur est blanc, et le deuxième est noir)
 		if($id_joueurs['joueur_1'] == $id_joueur) {
 			$couleur_joueur = "blanc";
 			$couleur_adversaire = "noir";
@@ -33,13 +32,21 @@
 			$couleur_joueur = "noir";
 			$couleur_adversaire = "blanc";
 		}
-		echo 'Vous êtes la couleur ' . $couleur_joueur . ', et votre identifiant est : ' . $id_joueur;
+		echo 'Vous êtes la couleur ' . $couleur_joueur . '<br>Votre identifiant est : ' . $id_joueur;
 
 		// récuperation de si l'adversaire a proposé partie nulle
 		$req = "SELECT propose_null FROM Partie WHERE id_partie = '$id_partie'";
 		$a_propose_nulle = $bdd->query($req)->fetch()['propose_null'];
 
-		if(($a_propose_nulle == 1 && $couleur_joueur == "noir") || ($a_propose_nulle == 2 && $couleur_joueur == "blanc")) /* l'adversaire a proposé nulle*/ {
+		// vérification de si la partie est bien en cours, et n'est pas terminée
+		$req = "SELECT statut FROM Partie WHERE id_partie = '$id_partie'";
+		$statut_partie = $bdd->query($req)->fetch()['statut'];
+		if($statut_partie == "finie") /* si la partie est finie */{
+			echo 'l adversaire a accepté de faire nulle, appuyez ici pour retourner à la page d accueil';
+			echo '<form action="main.php" method="post">
+				<button type="submit">retourner sur la page principale</button>
+			</form>';
+		} else if(($a_propose_nulle == 1 && $couleur_joueur == "noir") || ($a_propose_nulle == 2 && $couleur_joueur == "blanc")) /* la partie n'est pas finie et l'adversaire a proposé nulle*/ {
 			echo '
 			<form method="post">
 				<label for="reponse_null">l adversaire a proposé de faire partie nulle, voulez vous accepter ou refuser ?</label>
@@ -49,19 +56,36 @@
 					<option value="refuser">Refuser</option>
 				</select>
 				<br>
-				<input type="submit" value="envoyer" action = "reponse_null">
+				<input type="submit" value="envoyer">
 				<br><br>
 			</form>';
+			
 			if(isset($_POST['reponse_null']) && $_POST['reponse_null'] == "accepter") {
 				unset($_POST['reponse_null']);
 				$req = "UPDATE Partie SET statut = 'finie' WHERE id_partie = '$id_partie'";
 				$bdd->query($req);
-				echo "vous avez accépté nulle (maintenant il faut gerer la fin de partie et les stat)";
+				echo "vous avez accépté nulle";
+				echo'<form action="main.php" method="post">
+					<button type="submit">retourner au menu principale</button>
+				</form>';
 			} else if(isset($_POST['reponse_null']) && $_POST['reponse_null'] == "refuser")/* refuse la partie nulle */ {
-				unset($_POST['reponse_null']);
-				$req = "UPDATE Partie SET propose_null = 'NULL' WHERE id_partie = '$id_partie'";
+				$req = "UPDATE Partie SET propose_null = NULL WHERE id_partie = '$id_partie'";
 				$bdd->query($req);
+				
+				
 				echo 'vous avez refusé !';
+				if($couleur_joueur == "blanc") {
+					$req = "UPDATE Partie SET joueur_dont_c_est_le_tour = 2 WHERE id_partie = '$id_partie'";
+					$bdd->query($req);
+				} else if($couleur_joueur == "noir") {
+					$req = "UPDATE Partie SET joueur_dont_c_est_le_tour = 1 WHERE id_partie = '$id_partie'";
+					$bdd->query($req);
+				}
+				echo'<form action="main.php" method="post">
+					<button type="submit">retourner au menu principale (vous devrez ensuite recharger la partie)</button>
+				</form>';
+
+			
 			}
 		} else /* l'adversaire n'a pas proposé nulle (execution normale) */{
 			// quelques fonctions :
@@ -899,16 +923,42 @@
 				// si ce n'est pas à nous de jouer, afficher l'échiquier suite au dernier coup
 				// sans afficher le formulaire pour jouer
 
-				echo 'vous êtes la couleur ' . $couleur_joueur;
 				affiche_echiquier($echiquier);
 				// afficher l'échiquier
 				// affichage d'un message qui demande d'actualiser la page régulièrement
 				echo '<p>Ce n est pas à vous de jouer, veuillez actualiser fréquement la page afin 
 					de savoir l orsque ça sera votre tour</p>';
 			}
+
+			// proposition d'abandon de partie
+			echo '<h2>Abandon de la partie</h2>';
+
+			// <!-- Le bouton qui ouvre la fenêtre modale -->
+			echo '<form id="abandon_form" action="action_page.php">
+				<button type="submit">Abandonner partie</button>
+			</form>';
+
+			// Traitement de la réponse après la soumission du formulaire
+			if ($_SERVER["REQUEST_METHOD"] == "POST") {
+				// Vérification si le formulaire a été soumis
+				if (isset($_POST["confirmation"]) && $_POST["confirmation"] == "oui") {
+					// Si l'utilisateur a confirmé, effectuer ici vos actions dans la base de données
+					// Par exemple :
+					// abandonnerPartie();
+					echo "La partie a été abandonnée avec succès.";
+				} else {
+					echo "La partie n'a pas été abandonnée.";
+				}
+			}
+
+			// Génération du bouton d'abandon avec le formulaire associé
+			echo '<form action="" method="post">
+					<button type="submit" name="confirmation" value="oui">Abandonner partie</button>
+					<button type="submit" name="confirmation" value="non">Annuler</button>
+				</form>';
 		}
 
-		
+					
 	?>
 
 </body>

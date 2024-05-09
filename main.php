@@ -32,7 +32,7 @@
     $conn = new PDO("mysql:host=localhost;dbname=jeu_echec;charset=utf8", "root", "");
 
     // récupération de toutes les parties en cours du joueur
-    $sql = "SELECT joueur_1, joueur_2, point_1, point_2, pendule_j1, pendule_j2 FROM Partie WHERE (joueur_1 = $id_client OR joueur_2 = $id_client) AND statut = 'en cours'";
+    $sql = "SELECT joueur_1, joueur_2, point_1, point_2, pendule_j1, pendule_j2, id_partie FROM Partie WHERE (joueur_1 = $id_client OR joueur_2 = $id_client) AND statut = 'en cours'";
     $result = $conn->query($sql);
 
     // tableau des parties en cours
@@ -50,12 +50,13 @@
 
         // déterminer qui est l'adversaire :
 
-        // initialisation des variables avec des baleurs invalides
+        // initialisation des variables avec des valeurs invalides
         $adversaire = -1;
         $score_adversaire = -1;
         $score_joueur = -1;
         $penduls_adversaire = -1;
         $pendule_joueur = -1;
+        $id_partie = $row['id_partie'];
         
         if($id_client == $row['joueur_1'])
         {
@@ -74,16 +75,17 @@
             $pendule_joueur = $row['pendule_j2'];
         }
 
-        // récupération du nom de l'adversaire
+        // récupération du nom de l'adversaire plutot que son identifiant
         $sql = "SELECT nom FROM Clients WHERE id_client = '$adversaire'";
-        $nom_adversaire = $conn->query($sql)->fetch();
+        $nom_adversaire = $conn->query($sql)->fetch()['nom'];;
 
         // affichage de chaque cellule de chaque colonne
-        echo '<td>' . $nom_adversaire['nom'] . '</td>';
-        echo '<td>' . $row['point_1'] . "  points" . '</td>';
-        echo '<td>' . $row['point_2'] . "  points" . '</td>';
-        echo '<td>' . $row['pendule_j1'] . "  secondes" . '</td>';
-        echo '<td>' . $row['pendule_j2'] . "  secondes" . '</td>';
+        echo '<td>' . $nom_adversaire . '</td>';
+        echo '<td>' . $score_adversaire . "  points" . '</td>';
+        echo '<td>' . $score_joueur . "  points" . '</td>';
+        echo '<td>' . $penduls_adversaire . "  secondes" . '</td>';
+        echo '<td>' . $pendule_joueur . "  secondes" . '</td>';
+        echo '<td><a href="jouer_partie.php?id_partie=' . $id_partie . '&id_client=' . $id_client . '"><button>Rejoindre partie</button></a></td>';
 
         // fin de la ligne 
         echo '</tr>';
