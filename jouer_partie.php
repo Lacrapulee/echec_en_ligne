@@ -948,35 +948,38 @@
 				<input type="submit" name = "abandon_partie" value = "Abandonner partie">
 			</form>';
 
-			// Traitement de la réponse après la soumission du formulaire
+			// Traitement de la réponse après la soumission du formulaire d'abandon
 			if (isset($_POST["abandon_partie"]) && $_POST["abandon_partie"] == "Abandonner partie") {
 				$req = "UPDATE Partie SET statut = 'finie', id_vainqueur = '$id_adversaire' WHERE id_partie = '$id_partie'";
 				$bdd->query($req);
 				unset($_POST['abandon_partie']);
 				echo 'c est noté, vous pouvez actualiser la page';
 			}
+
+			// proposition de mat
+			echo '
+			<form id = "echec_et_mat_form" method="post">
+				<h2>Proposition d échec et mat</h2>
+				<label for="perdant">Sélectionnez la couleur qui perd définitivement la partie</label><br><br>
+				<select id="perdant" name="pardant" required>
+				<option value="">-- Choisissez une couleur --</option>
+				<option value="blanc">blanc</option>
+				<option value="noir">noir</option>
+				</select><br><br>
+				<input type="submit" name = "echec_et_mat" value = "Envoyer echec et mat"><br><br>
+			</form>';
+
+			// traitement de la réponse si soumission du formulaire
+			if(isset($_POST["echec_et_mat"]) && $_POST["echec_et_mat"] == "Envoyer echec et mat")
+			{
+				
+			}
 		}
 
-		//echo '<form action="">
-		//<button type="button" name="echec_math">Echec et math ?</button>
-		//</form>';
-		//
-		//echo '<form action="">
-		//<button type="button" name="echec">echec ?</button>
-		//</form>';
-		//
-		//if (isset($_POST['echec_math'])){
-		//
-		//	$req = "UPDATE Partie SET Statut = 'fini' WHERE id_match = $id_match";
-		//	$bdd->query($req);
-		//}
-		//	
-		//if (isset($_POST['echec'])){
-		//	
-		//}
-			
-			
-
+		if (isset($_POST['echec_math'])){
+			$req = "UPDATE Partie SET Statut = 'fini' WHERE id_match = $id_match";
+			$bdd->query($req);
+		}
 
 		
 					
