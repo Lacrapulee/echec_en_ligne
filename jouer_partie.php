@@ -50,7 +50,7 @@
 		$req = "SELECT statut FROM Partie WHERE id_partie = '$id_partie'";
 		$statut_partie = $bdd->query($req)->fetch()['statut'];
 		if($statut_partie == "finie") /* si la partie est finie */{
-			echo 'l adversaire a accepté de faire nulle, appuyez ici pour retourner à la page d accueil';
+			echo '<br>La partie est terminée <br>Appuyez ici pour retourner à la page d accueil<br>';
 			echo '<form action="main.php" method="post">
 				<button type="submit">retourner sur la page principale</button>
 			</form>';
@@ -943,7 +943,7 @@
 
 			// proposition d'abandon de partie
 			echo '
-			<form id="abandon_form">
+			<form id="abandon_form" method = "post">
 				<h2>Abandon de la partie</h2>
 				<input type="submit" name = "abandon_partie" value = "Abandonner partie">
 			</form>';
@@ -952,7 +952,8 @@
 			if (isset($_POST["abandon_partie"]) && $_POST["abandon_partie"] == "Abandonner partie") {
 				$req = "UPDATE Partie SET statut = 'finie', id_vainqueur = '$id_adversaire' WHERE id_partie = '$id_partie'";
 				$bdd->query($req);
-				header('refresh:0');
+				unset($_POST['abandon_partie']);
+				echo 'c est noté, vous pouvez actualiser la page';
 			}
 		}
 
