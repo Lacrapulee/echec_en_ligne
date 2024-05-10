@@ -40,7 +40,7 @@
 			$couleur_adversaire = "blanc";
 			$id_adversaire = $id_joueurs['joueur_1'];
 		}
-		echo 'Vous êtes la couleur ' . $couleur_joueur . '<br>Votre identifiant est : ' . $id_joueur;
+		echo 'Vous êtes la couleur ' . $couleur_joueur . '<br>Votre identifiant est : ' . $id_joueur . '<br>';
 
 		// récuperation de si l'adversaire a proposé partie nulle
 		$req = "SELECT propose_null FROM Partie WHERE id_partie = '$id_partie'";
@@ -97,10 +97,10 @@
 			
 			}
 		} else if($proposition_mat != NULL) /* si quelqu'un a proposé mat */ {
-			if(($proposition_mat/10 == 1 && $couleur_joueur == "blanc") || ($proposition_mat/10 == 2 && $couleur_joueur == "noir")) /* c'est le joueur connecté qui a fait la proposition de mat */ {
+			if ((intdiv($proposition_mat, 10) == 1 && $couleur_joueur == "blanc") || (intdiv($proposition_mat, 10) == 2 && $couleur_joueur == "noir")) /* c'est le joueur connecté qui a fait la proposition de mat */ {
 				echo 'vous avez proposé mat à l adversaire.<br>
 				Dans l attente de sa réponse, veuillez ctualiser régulièrement la page.';
-			} else if($proposition_mat%10 == 1) /* les blancs auraient perdu ? */ {
+			} else if ($proposition_mat%10 == 1) /* les blancs auraient perdu ? */ {
 				// formulaire de confirmation
 				echo '
 				<form id = "blanc_perdent_form" method="post">
@@ -142,11 +142,11 @@
 					<option value="oui">oui</option>
 					<option value="non">non</option>
 					</select><br><br>
-					<input type="submit" name = "envoyer_reponse_n" value = "Envoyer reponse"><br><br>
+					<input type="submit" name = "envoyer_reponse_n" value = "Envoyer la reponse"><br><br>
 				</form>';
 
 				// traitement de la réponse si soumission du formulaire de mat
-				if(isset($_POST["envoyer_reponse_n"]) && $_POST["envoyer_reponse_n"] == "Envoyer reponse") {
+				if(isset($_POST["envoyer_reponse_n"]) && $_POST["envoyer_reponse_n"] == "Envoyer la reponse") {
 					if($_POST["noir_perdent"] == "oui" && $couleur_joueur = "noir") {
 						$req = "UPDATE Partie SET statut = 'finie', id_vainqueur = '$id_adversaire' WHERE id_partie = '$id_partie'";
 						$bdd->query($req);
@@ -162,10 +162,10 @@
 					}
 					echo 'c est noté, vous pouvez actualiser la page';
 				}
-			} else if($proposition_mat/10 == 1 && $proposition_mat%10 == 3) /* le blanc a refusé mat */ {
-				echo 'mat refusé, veuillez actualiser la page'// ; oublié pour qu'il y ait une erreur, penser a finir le code avec la bdd ici
-			} else if($proposition_mat/10 == 2 && $proposition_mat%10 == 3) /* le noir a refusé mat */ {
-				echo 'mat refusé, veuillez actualiser la page'// et ici
+			} else if ($proposition_mat%10 == 3) /* le blanc a refusé mat */ {
+				$req = "UPDATE Partie SET proposition_mat = NULL WHERE id_partie = '$id_partie'";
+				$bdd->query($req);
+				echo 'mat refusé, veuillez actualiser la page';
 			}
 		} else /* l'adversaire n'a pas proposé nulle ni mat (execution normale) */ {
 			// quelques fonctions :
