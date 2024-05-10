@@ -80,7 +80,7 @@
 			} else if(isset($_POST['reponse_null']) && $_POST['reponse_null'] == "refuser")/* refuse la partie nulle */ {
 				$req = "UPDATE Partie SET propose_null = NULL WHERE id_partie = '$id_partie'";
 				$bdd->query($req);
-				
+				 
 				
 				echo 'vous avez refusé !';
 				if($couleur_joueur == "blanc") {
