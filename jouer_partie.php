@@ -34,9 +34,11 @@
 		if($id_joueurs['joueur_1'] == $id_joueur) {
 			$couleur_joueur = "blanc";
 			$couleur_adversaire = "noir";
+			$id_adversaire = $id_joueurs['joueur_2'];
 		} else {
 			$couleur_joueur = "noir";
 			$couleur_adversaire = "blanc";
+			$id_adversaire = $id_joueurs['joueur_1'];
 		}
 		echo 'Vous êtes la couleur ' . $couleur_joueur . '<br>Votre identifiant est : ' . $id_joueur;
 
@@ -302,7 +304,6 @@
 
 				// demander la pièce à déplacer
 				echo '
-				
 				<form method="post" id = "formulaire_de_demande_de_piece_a_deplacer">
 
 					<h2>séléction de la pièce à déplacer</h2>
@@ -369,6 +370,7 @@
 					<input type="submit" value="Valider">
 				</form>
 				<form method="post" id="formulaire_proposition_nulle">
+					<h2>Proposer partie nulle</h2>
 					<input type = "submit" name = "proposer_partie_nulle" value = "Proposer partie nulle">
 				</form>';
 
@@ -940,53 +942,42 @@
 			}
 
 			// proposition d'abandon de partie
-			echo '<h2>Abandon de la partie</h2>';
-
-			// <!-- Le bouton qui ouvre la fenêtre modale -->
-			echo '<form id="abandon_form" action="action_page.php">
-				<button type="submit">Abandonner partie</button>
+			echo '
+			<form id="abandon_form">
+				<h2>Abandon de la partie</h2>
+				<input type="submit" name = "abandon_partie" value = "Abandonner partie">
 			</form>';
 
 			// Traitement de la réponse après la soumission du formulaire
-			if ($_SERVER["REQUEST_METHOD"] == "POST") {
-				// Vérification si le formulaire a été soumis
-				if (isset($_POST["confirmation"]) && $_POST["confirmation"] == "oui") {
-					// Si l'utilisateur a confirmé, effectuer ici vos actions dans la base de données
-					// Par exemple :
-					// abandonnerPartie();
-					echo "La partie a été abandonnée avec succès.";
-				} else {
-					echo "La partie n'a pas été abandonnée.";
-				}
-			}
-
-			// Génération du bouton d'abandon avec le formulaire associé
-			echo '<form action="" method="post">
-					<button type="submit" name="confirmation" value="oui">Abandonner partie</button>
-					<button type="submit" name="confirmation" value="non">Annuler</button>
-				</form>';
-
-				echo '<form action="">
-				<button type="button" name="echec_math">Echec et math ?</button>
-				</form>';
-	
-			if (isset($_POST['echec_math'])){
-
-				//si le joueur reclame un echec, on regarde le numéro de coup, 
-				$req = "SELECT max(num_coup) FROM coup WHERE id_partie = '$id_partied'";
-				$numero_coup =  $bdd->query($req)->fetch();
-	
-					if ($numero_coup == $dernier_coup + 1 ) {
-						//si le coup actelle est inférieur ou égal au dernier coup, 
-						//alors je joueur adverse a perdu
-						
-					}
-					else {
-						$dernier_coup = $numero_coup;
-					}
-				
+			if (isset($_POST["abandon_partie"]) && $_POST["abandon_partie"] == "Abandonner partie") {
+				$req = "UPDATE Partie SET statut = 'finie', id_vainqueur = '$id_adversaire' WHERE id_partie = '$id_partie'";
+				$bdd->query($req);
+				header('refresh:0');
 			}
 		}
+
+		//echo '<form action="">
+		//<button type="button" name="echec_math">Echec et math ?</button>
+		//</form>';
+		//
+		//echo '<form action="">
+		//<button type="button" name="echec">echec ?</button>
+		//</form>';
+		//
+		//if (isset($_POST['echec_math'])){
+		//
+		//	$req = "UPDATE Partie SET Statut = 'fini' WHERE id_match = $id_match";
+		//	$bdd->query($req);
+		//}
+		//	
+		//if (isset($_POST['echec'])){
+		//	
+		//}
+			
+			
+
+
+		
 					
 	?>
 
