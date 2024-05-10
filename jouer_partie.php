@@ -47,9 +47,10 @@
 		$a_propose_nulle = $bdd->query($req)->fetch()['propose_null'];
 
 		// vérification de si la partie est bien en cours, et n'est pas terminée
-		$req = "SELECT statut FROM Partie WHERE id_partie = '$id_partie'";
+		$req = "SELECT statut, proposition_mat FROM Partie WHERE id_partie = '$id_partie'";
 		$statut_partie = $bdd->query($req)->fetch()['statut'];
-		if($statut_partie == "finie") /* si la partie est finie */{
+		$proposition_mat = $bdd->query($req)->fetch()['proposition_mat'];
+		if($statut_partie == "finie") /* si la partie est finie */ {
 			echo '<br>La partie est terminée <br>Appuyez ici pour retourner à la page d accueil<br>';
 			echo '<form action="main.php" method="post">
 				<button type="submit">retourner sur la page principale</button>
@@ -95,7 +96,78 @@
 
 			
 			}
-		} else /* l'adversaire n'a pas proposé nulle (execution normale) */{
+		} else if($proposition_mat != NULL) /* si quelqu'un a proposé mat */ {
+			if(($proposition_mat/10 == 1 && $couleur_joueur == "blanc") || ($proposition_mat/10 == 2 && $couleur_joueur == "noir")) /* c'est le joueur connecté qui a fait la proposition de mat */ {
+				echo 'vous avez proposé mat à l adversaire.<br>
+				Dans l attente de sa réponse, veuillez ctualiser régulièrement la page.';
+			} else if($proposition_mat%10 == 1) /* les blancs auraient perdu ? */ {
+				// formulaire de confirmation
+				echo '
+				<form id = "blanc_perdent_form" method="post">
+					<h2>Confirmer que les blanc on perdu</h2>
+					<label for="blanc_perdent">Les blanc ont-il perdu définitivement la partie ?</label><br><br>
+					<select id="blanc_perdent" name="blanc_perdent" required>
+					<option value="">-- Choisissez une réponse --</option>
+					<option value="oui">oui</option>
+					<option value="non">non</option>
+					</select><br><br>
+					<input type="submit" name = "envoyer_reponse" value = "Envoyer reponse"><br><br>
+				</form>';
+
+				// traitement de la réponse si soumission du formulaire de mat
+				if(isset($_POST["envoyer_reponse"]) && $_POST["envoyer_reponse"] == "Envoyer reponse") {
+					if($_POST["blanc_perdent"] == "oui" && $couleur_joueur = "blanc") {
+						$req = "UPDATE Partie SET statut = 'finie', id_vainqueur = '$id_adversaire' WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					} else if($_POST["blanc_perdent"] == "oui" && $couleur_joueur = "noir") {
+						$req = "UPDATE Partie SET statut = 'finie', id_vainqueur = '$id_joueur' WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					} else if($_POST["blanc_perdent"] == "non" && $couleur_joueur == "blanc") {
+						$req = "UPDATE Partie SET proposition_mat = 13 WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					} else if($_POST["blanc_perdent"] == "non" && $couleur_joueur == "noir") {
+						$req = "UPDATE Partie SET proposition_mat = 23 WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					}
+					echo 'c est noté, vous pouvez actualiser la page';
+				}
+			} else if($proposition_mat%10 == 2) /* les noir auraient perdu ? */ {
+				// formulaire de confirmation
+				echo '
+				<form id = "noir_perdent_form" method="post">
+					<h2>Confirmer que les noir on perdu</h2>
+					<label for="noir_perdent">Les noir ont-il perdu définitivement la partie ?</label><br><br>
+					<select id="noir_perdent" name="noir_perdent" required>
+					<option value="">-- Choisissez une réponse --</option>
+					<option value="oui">oui</option>
+					<option value="non">non</option>
+					</select><br><br>
+					<input type="submit" name = "envoyer_reponse_n" value = "Envoyer reponse"><br><br>
+				</form>';
+
+				// traitement de la réponse si soumission du formulaire de mat
+				if(isset($_POST["envoyer_reponse_n"]) && $_POST["envoyer_reponse_n"] == "Envoyer reponse") {
+					if($_POST["noir_perdent"] == "oui" && $couleur_joueur = "noir") {
+						$req = "UPDATE Partie SET statut = 'finie', id_vainqueur = '$id_adversaire' WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					} else if($_POST["noir_perdent"] == "oui" && $couleur_joueur = "blanc") {
+						$req = "UPDATE Partie SET statut = 'finie', id_vainqueur = '$id_joueur' WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					} else if($_POST["noir_perdent"] == "non" && $couleur_joueur == "blanc") {
+						$req = "UPDATE Partie SET proposition_mat = 13 WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					} else if($_POST["noir_perdent"] == "non" && $couleur_joueur == "noir") {
+						$req = "UPDATE Partie SET proposition_mat = 23 WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					}
+					echo 'c est noté, vous pouvez actualiser la page';
+				}
+			} else if($proposition_mat/10 == 1 && $proposition_mat%10 == 3) /* le blanc a refusé mat */ {
+				echo 'mat refusé, veuillez actualiser la page'// ; oublié pour qu'il y ait une erreur, penser a finir le code avec la bdd ici
+			} else if($proposition_mat/10 == 2 && $proposition_mat%10 == 3) /* le noir a refusé mat */ {
+				echo 'mat refusé, veuillez actualiser la page'// et ici
+			}
+		} else /* l'adversaire n'a pas proposé nulle ni mat (execution normale) */ {
 			// quelques fonctions :
 
 				function initialise_echiquier()
@@ -294,8 +366,7 @@
 					$echiquier = unserialize($echiquier);
 				}
 
-			if(($joueur_dont_c_est_le_tour == 1 && $couleur_joueur == "blanc") || ($joueur_dont_c_est_le_tour == 2 && $couleur_joueur == "noir"))/* si c'est a moi de jouer */
-			{
+			if(($joueur_dont_c_est_le_tour == 1 && $couleur_joueur == "blanc") || ($joueur_dont_c_est_le_tour == 2 && $couleur_joueur == "noir"))/* si c'est a moi de jouer pendant un tour normal */ {
 				// si c'est au joueur blanc de jouer et que je suis le joueur blanc
 				// ou si au joueur noir et que je suis le joueur noir
 
@@ -368,12 +439,8 @@
 							
 					<br><br>
 					<input type="submit" value="Valider">
-				</form>
-				<form method="post" id="formulaire_proposition_nulle">
-					<h2>Proposer partie nulle</h2>
-					<input type = "submit" name = "proposer_partie_nulle" value = "Proposer partie nulle">
 				</form>';
-
+				
 				if (isset($_POST["lettre"]) && isset($_POST["nombre"]) && isset($_POST["lettre2"]) && isset($_POST["nombre2"])) /* si l'utilisateur a soumit le coup a jouer */{
 					// récupérer les valeurs de coordonnée de depart soumises
 					$lettre = $_POST["lettre"];
@@ -904,7 +971,14 @@
 					}
 				}
 
-				else if(isset($_POST['proposer_partie_nulle']) && $_POST['proposer_partie_nulle'] == "Proposer partie nulle") /* si le joueur n'a pas soumi de coup ET qu'il veut proposer partie nulle*/ {
+				// formulaire de partie nulle
+				echo'
+				<form method="post" id="formulaire_proposition_nulle">
+					<h2>Proposer partie nulle</h2>
+					<input type = "submit" name = "proposer_partie_nulle" value = "Proposer partie nulle">
+				</form>';
+
+				if(isset($_POST['proposer_partie_nulle']) && $_POST['proposer_partie_nulle'] == "Proposer partie nulle") /* si le joueur n'a pas soumi de coup ET qu'il veut proposer partie nulle*/ {
 					if($couleur_joueur == "blanc") {
 						$req = "UPDATE Partie SET propose_null = 1 WHERE id_partie = '$id_partie'";
 						$bdd->query($req);
@@ -917,14 +991,16 @@
 						$bdd->query($req);
 					}
 
-					// pour qu'il ne puisse plus être détécté
-					unset($_POST['proposer_partie_nulle']);
-
+					
 					// desactiver l'id avec javascript formulaire_proposition_nulle
 					echo '<script>document.getElementById("formulaire_proposition_nulle").remove(); </script>';
 					echo '<script>document.getElementById("formulaire_de_demande_de_piece_a_deplacer").remove(); </script>';
 					
-					echo "vous avec bien proposé partie nulle, vous pouvez desormais actualiser la page regulièrement avin de connaitre la reponse de votre adversaire";
+					echo "vous avec bien proposé partie nulle, vous devez maintenant retourner sur le menu principale puis revenire sur la partie";
+					
+					echo'<form action="main.php" method="post">
+						<button type="submit">retourner au menu principale (vous devrez ensuite recharger la partie)</button>
+					</form>';
 				}
 			}
 			else
@@ -940,6 +1016,8 @@
 				// affichage du bouton pour l'echec et math 
 				
 			}
+
+			// les choses proposées tout le temps, que ca soit a moi de jouer ou pas
 
 			// proposition d'abandon de partie
 			echo '
@@ -961,7 +1039,7 @@
 			<form id = "echec_et_mat_form" method="post">
 				<h2>Proposition d échec et mat</h2>
 				<label for="perdant">Sélectionnez la couleur qui perd définitivement la partie</label><br><br>
-				<select id="perdant" name="pardant" required>
+				<select id="perdant" name="perdant" required>
 				<option value="">-- Choisissez une couleur --</option>
 				<option value="blanc">blanc</option>
 				<option value="noir">noir</option>
@@ -969,20 +1047,30 @@
 				<input type="submit" name = "echec_et_mat" value = "Envoyer echec et mat"><br><br>
 			</form>';
 
-			// traitement de la réponse si soumission du formulaire
+			// traitement de la réponse si soumission du formulaire de mat
 			if(isset($_POST["echec_et_mat"]) && $_POST["echec_et_mat"] == "Envoyer echec et mat")
 			{
-				
+				if($couleur_joueur == "blanc") {
+					if($_POST["perdant"] == "blanc") {
+						$req = "UPDATE Partie SET proposition_mat = 11 WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					} else if($_POST["perdant"] == "noir") {
+						$req = "UPDATE Partie SET proposition_mat = 12 WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					}
+				} else if($couleur_joueur == "noir") {
+					if($_POST["perdant"] == "blanc") {
+						$req = "UPDATE Partie SET proposition_mat = 21 WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					} else if($_POST["perdant"] == "noir") {
+						$req = "UPDATE Partie SET proposition_mat = 22 WHERE id_partie = '$id_partie'";
+						$bdd->query($req);
+					}
+				}
+
+				echo 'c est noté, vous pouvez actualiser régulièrement la page';
 			}
-		}
-
-		if (isset($_POST['echec_math'])){
-			$req = "UPDATE Partie SET Statut = 'fini' WHERE id_match = $id_match";
-			$bdd->query($req);
-		}
-
-		
-					
+		}					
 	?>
 
 </body>
